@@ -30,7 +30,9 @@ Clone the repository:
 
 Bash
 git clone https://github.com/Arekmaurya/AI-Fitness-Diet-Recommendation-System.git
-cd YOUR_REPO_NAME
+cd AI-Fitness-Diet-Recommendation-System
+
+
 Run with Docker Compose:
 
 Bash
