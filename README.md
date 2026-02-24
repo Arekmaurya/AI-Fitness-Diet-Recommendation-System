@@ -30,6 +30,8 @@ Clone the repository:
 
 Bash
 git clone https://github.com/Arekmaurya/AI-Fitness-Diet-Recommendation-System.git
+
+
 cd AI-Fitness-Diet-Recommendation-System
 
 
