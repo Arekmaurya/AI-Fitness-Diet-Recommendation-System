@@ -21,6 +21,18 @@ DevOps: Docker, Docker Compose
 
 Data: JSON (Persistent File Storage)
 
+## 🌍 Run Anywhere with Docker Hub
+No need to clone the full repo! Just create a `docker-compose.yml` and run:
+
+```yaml
+services:
+  backend:
+    image: harshmaurya2002/fitness-backend:latest
+    ports: ["8000:8000"]
+  frontend:
+    image: harshmaurya2002/fitness-frontend:latest
+    ports: ["8501:8501"]
+
 📦 Installation & Setup
 Prerequisites
 Docker Desktop installed and running.
