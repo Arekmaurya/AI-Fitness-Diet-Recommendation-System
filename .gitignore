@@ -1,0 +1,4 @@
+myvenv/
+__pycache__/
+users_db.json
+.dockerignore

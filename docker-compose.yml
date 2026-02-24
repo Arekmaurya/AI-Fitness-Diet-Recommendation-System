@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # This keeps your users_db.json synced with your local computer!
+      - ./users_db.json:/app/users_db.json
+
+  frontend:
+    build: 
+      context: .
+      dockerfile: frontend.Dockerfile
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
