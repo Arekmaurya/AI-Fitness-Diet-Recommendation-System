@@ -29,7 +29,7 @@ Quick Start
 Clone the repository:
 
 Bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+git clone https://github.com/Arekmaurya/AI-Fitness-Diet-Recommendation-System.git
 cd YOUR_REPO_NAME
 Run with Docker Compose:
 
@@ -41,14 +41,6 @@ Frontend UI: http://localhost:8501
 
 Interactive API Docs (Swagger): http://localhost:8000/docs
 
-📊 API Structure
-The API follows a structured nested response format:
 
-JSON
-{
-  "account": { "user_id": "...", "created_at": "...", "updated_at": "..." },
-  "profile": { "name": "...", "email": "...", "age": "...", "goal": "..." },
-  "metrics": { "bmi": "...", "recommended_calories": "...", "macros": "..." }
-}
 🤝 Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
