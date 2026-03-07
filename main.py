@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from uuid import UUID, uuid4
 from pydantic import EmailStr
-from schema.schema import UserInput, UserUpdate, UserResponse
+from schema.schema import UserInput, UserUpdate, UserResponse, DietPlanRequest
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from gemini_service import generate_diet_plan
 import json
 import os
 
@@ -126,3 +127,28 @@ def update_health_report(user_email: str, user_data: UserUpdate):
     db[user_email] = new_structured_response
     write_db(db)
     return new_structured_response
+
+
+@app.post("/diet-plan/{user_email}")
+def get_diet_plan(user_email: str, request: DietPlanRequest):
+    db = read_db()
+    if user_email not in db:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_data = db[user_email]
+    calories = user_data["metrics"]["recommended_calories"]
+    macros = user_data["metrics"]["macros"]
+    goal = user_data["profile"]["goal"]
+
+    plan_result = generate_diet_plan(
+        calories=calories,
+        macros=macros,
+        diet_preference=request.diet_preference,
+        plan_duration=request.plan_duration,
+        goal=goal,
+    )
+
+    if plan_result["status"] == "error":
+        raise HTTPException(status_code=500, detail=plan_result["message"])
+
+    return plan_result["plan"]

@@ -100,3 +100,9 @@ class UserResponse(BaseModel):
     account: dict
     profile: dict
     metrics: dict
+
+
+# 4. Diet Plan Request Model
+class DietPlanRequest(BaseModel):
+    diet_preference: Literal["veg", "non_veg", "vegan"]
+    plan_duration: Literal["1_day", "1_week"]

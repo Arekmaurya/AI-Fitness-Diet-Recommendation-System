@@ -3,8 +3,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy main.py to root
+# Copy main.py and gemini_service.py to root
 COPY main.py .
+COPY gemini_service.py .
 
 # Create the schema folder and copy the file into it
 # This ensures "from schema.schema import..." still works!

@@ -1,12 +1,12 @@
 import streamlit as st
 import requests
 
-API_URL = "http://backend:8000"
+API_URL = "https://ai-fitness-3w22.onrender.com"
 
 st.set_page_config(page_title="AI Fitness Tracker", page_icon="💪", layout="centered")
 st.title("💪 AI Fitness & Diet Recommendation System")
 
-tab1, tab2 = st.tabs(["🆕 Create Profile", "🔄 Update My Stats"])
+tab1, tab2, tab3 = st.tabs(["🆕 Create Profile", "🔄 Update My Stats", "🍽️ Get Diet Plan"])
 
 # ==========================================
 # TAB 1: CREATE NEW USER
@@ -142,5 +142,70 @@ with tab2:
                     )
 
                     st.caption(f"Last updated at: {data['account']['updated_at']}")
+                else:
+                    st.error(f"Error: {response.json().get('detail')}")
+
+
+# ==========================================
+# TAB 3: GET DIET PLAN
+# ==========================================
+with tab3:
+    st.write("Generate a personalized diet plan based on your calculated macros!")
+
+    plan_email = st.text_input("Your Registered Email", key="plan_email")
+
+    with st.form("diet_plan_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            diet_pref = st.selectbox(
+                "Dietary Preference",
+                ["veg", "non_veg", "vegan"],
+                format_func=lambda x: x.replace("_", "-").title(),
+            )
+        with col2:
+            duration = st.selectbox(
+                "Plan Duration",
+                ["1_day", "1_week"],
+                format_func=lambda x: x.replace("_", " ").title(),
+            )
+
+        generate_submitted = st.form_submit_button("Generate Diet Plan 🍱")
+
+    if generate_submitted:
+        if not plan_email:
+            st.warning("Please enter your email first!")
+        else:
+            with st.spinner("Our AI Nutritionist is crafting your plan. This may take a few seconds..."):
+                payload = {
+                    "diet_preference": diet_pref,
+                    "plan_duration": duration,
+                }
+                
+                response = requests.post(
+                    f"{API_URL}/diet-plan/{plan_email}", json=payload
+                )
+
+                if response.status_code == 200:
+                    plan_data = response.json()
+                    st.success("Diet Plan Generated Successfully! 🎉")
+                    
+                    for day_plan in plan_data.get("days", []):
+                        with st.expander(f"📅 Day {day_plan['day']}", expanded=(duration == "1_day")):
+                            meals = day_plan.get("meals", {})
+                            
+                            for meal_type, meal_info in meals.items():
+                                st.markdown(f"**{meal_type.title()}**: {meal_info['name']}")
+                                st.caption(meal_info['description'])
+                                
+                                m1, m2, m3, m4 = st.columns(4)
+                                m1.metric("Calories", f"{meal_info['calories']} kcal")
+                                m2.metric("Protein", f"{meal_info['protein_g']}g")
+                                m3.metric("Fat", f"{meal_info['fat_g']}g")
+                                m4.metric("Carbs", f"{meal_info['carbs_g']}g")
+                                st.divider()
+                                
+                            daily_total = day_plan.get("daily_total", {})
+                            st.info(f"**Daily Total**: {daily_total.get('calories', 0)} kcal | Protein: {daily_total.get('protein_g', 0)}g | Fat: {daily_total.get('fat_g', 0)}g | Carbs: {daily_total.get('carbs_g', 0)}g")
+
                 else:
                     st.error(f"Error: {response.json().get('detail')}")

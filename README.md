@@ -58,3 +58,6 @@ services:
     image: harshmaurya2002/fitness-frontend:latest
     ports: ["8501:8501"]
 
+
+🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
