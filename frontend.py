@@ -1,10 +1,27 @@
 import streamlit as st
 import requests
 
-API_URL = "https://ai-fitness-3w22.onrender.com"
+import os
+
+API_URL = os.getenv("API_URL", "https://ai-fitness-backend-9x8z.onrender.com")
 
 st.set_page_config(page_title="AI Fitness Tracker", page_icon="💪", layout="centered")
 st.title("💪 AI Fitness & Diet Recommendation System")
+
+# ==========================================
+# RENDER COLD START HANDLING
+# ==========================================
+# Ping the backend in the background to wake it up if it's on a free Render tier.
+try:
+    # Try to ping with a very short timeout (e.g., 2 seconds)
+    # If the backend is awake, it will respond instantly.
+    # If it's asleep, the request will timeout, and we know we need to show a warning.
+    requests.get(f"{API_URL}/all-users", timeout=2, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"})
+except requests.exceptions.Timeout:
+    st.warning("⏳ Our servers are waking up from sleep! Your first request might take 1-2 minutes to complete. Please be patient.", icon="⚠️")
+except requests.exceptions.RequestException:
+    # Ignore other connection errors here, let the actual forms handle them
+    pass
 
 tab1, tab2, tab3 = st.tabs(["🆕 Create Profile", "🔄 Update My Stats", "🍽️ Get Diet Plan"])
 
@@ -49,7 +66,7 @@ with tab1:
             "goal": goal,
         }
         with st.spinner("Calculating..."):
-            response = requests.post(f"{API_URL}/health-report", json=payload)
+            response = requests.post(f"{API_URL}/health-report", json=payload, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"})
 
             if response.status_code == 200:
                 data = response.json()
@@ -75,7 +92,11 @@ with tab1:
                 st.caption(f"Profile created at: {data['account']['created_at']}")
 
             else:
-                st.error(f"Error: {response.json().get('detail')}")
+                try:
+                    error_detail = response.json().get('detail', 'Unknown error')
+                except Exception:
+                    error_detail = f"Server returned {response.status_code}: {response.text}"
+                st.error(f"Error: {error_detail}")
 
 
 # ==========================================
@@ -123,7 +144,7 @@ with tab2:
 
             with st.spinner("Recalculating your metrics..."):
                 response = requests.put(
-                    f"{API_URL}/update-report/{update_email}", json=update_payload
+                    f"{API_URL}/update-report/{update_email}", json=update_payload, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"}
                 )
 
                 if response.status_code == 200:
@@ -143,7 +164,11 @@ with tab2:
 
                     st.caption(f"Last updated at: {data['account']['updated_at']}")
                 else:
-                    st.error(f"Error: {response.json().get('detail')}")
+                    try:
+                        error_detail = response.json().get('detail', 'Unknown error')
+                    except Exception:
+                        error_detail = f"Server returned {response.status_code}: {response.text}"
+                    st.error(f"Error: {error_detail}")
 
 
 # ==========================================
@@ -182,7 +207,7 @@ with tab3:
                 }
                 
                 response = requests.post(
-                    f"{API_URL}/diet-plan/{plan_email}", json=payload
+                    f"{API_URL}/diet-plan/{plan_email}", json=payload, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"}
                 )
 
                 if response.status_code == 200:
@@ -208,4 +233,8 @@ with tab3:
                             st.info(f"**Daily Total**: {daily_total.get('calories', 0)} kcal | Protein: {daily_total.get('protein_g', 0)}g | Fat: {daily_total.get('fat_g', 0)}g | Carbs: {daily_total.get('carbs_g', 0)}g")
 
                 else:
-                    st.error(f"Error: {response.json().get('detail')}")
+                    try:
+                        error_detail = response.json().get('detail', 'Unknown error')
+                    except Exception:
+                        error_detail = f"Server returned {response.status_code}: {response.text}"
+                    st.error(f"Error: {error_detail}")

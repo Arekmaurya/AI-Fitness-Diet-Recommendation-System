@@ -3,8 +3,7 @@ import os
 from openai import OpenAI
 
 # Configure OpenRouter API using the provided key
-# Using GEMINI_API_KEY environment variable since that's what was set in .env
-api_key = os.getenv("GEMINI_API_KEY", "").strip()
+api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=api_key,
@@ -22,7 +21,7 @@ def generate_diet_plan(
     goal: str,
 ) -> dict:
     """
-    Uses OpenRouter to generate a personalized diet plan using a free Gemini model.
+    Uses OpenRouter to generate a personalized diet plan using free models.
     """
     diet_label = diet_preference.replace("_", "-")
     num_days = 7 if plan_duration == "1_week" else 1
@@ -96,12 +95,11 @@ def generate_diet_plan(
 
     try:
         response = client.chat.completions.create(
-            model="deepseek/deepseek-r1", # Primary model
+            model="google/gemma-3-12b-it:free",
             extra_body={
                 "models": [
-                    "deepseek/deepseek-r1",
-                    "openai/gpt-4o-mini",
-                    "mistralai/mistral-7b-instruct"
+                    "google/gemma-3-12b-it:free",
+                    "mistralai/mistral-small-3.1-24b-instruct:free"
                 ]
             },
             messages=[
@@ -123,4 +121,8 @@ def generate_diet_plan(
     except json.JSONDecodeError as e:
         return {"status": "error", "message": f"Failed to parse AI response: {str(e)}"}
     except Exception as e:
+        # Check if the error is a 429 rate limit or quota error from OpenRouter/OpenAI
+        error_str = str(e).lower()
+        if "429" in error_str or "quota" in error_str or "rate limit" in error_str:
+            return {"status": "error", "message": "API Key Quota Hit. Please check your OpenRouter credits or try again later."}
         return {"status": "error", "message": f"OpenRouter API error: {str(e)}"}
